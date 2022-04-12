@@ -13,36 +13,24 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class GetItemHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
 
     private final DynamoDbEnhancedClient dbClient;
     private final String tableName;
     private final TableSchema<Book> bookTableSchema;
-    Map<String, String> jsonHeaders;
 
     public GetItemHandler() {
         dbClient = DependencyFactory.dynamoDbEnhancedClient();
         tableName = DependencyFactory.tableName();
         bookTableSchema = TableSchema.fromBean(Book.class);
-        jsonHeaders = new HashMap<>();
-        jsonHeaders.put("Content-Type", "application/json");
     }
 
     @Override
     public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent input, Context context) {
-        LambdaLogger logger = context.getLogger();
-        logger.log("Inside lambda");
-        logger.log("Raw path: " + input.getRawPath());
         String response = "";
         DynamoDbTable<Book> booksTable = dbClient.table(tableName, bookTableSchema);
-        Map<String, String> pathParameters = input.getPathParameters();
-        logger.log("Path parameters: " + pathParameters);
-        if (pathParameters != null) {
-            String itemPartitionKey = pathParameters.get(Book.PARTITION_KEY);
-            logger.log("Ley: " + itemPartitionKey);
+        String itemPartitionKey = getPartitionKey(input.getRawPath());
+        if (itemPartitionKey != null) {
             Book item = booksTable.getItem(Key.builder().partitionValue(itemPartitionKey).build());
             if (item != null) {
                 response = new Gson().toJson(item);
@@ -52,8 +40,12 @@ public class GetItemHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
         return APIGatewayV2HTTPResponse.builder()
                 .withStatusCode(200)
                 .withBody(response)
-                .withHeaders(jsonHeaders)
                 .build();
+    }
+
+    private String getPartitionKey(String rawPath) {
+        if (rawPath == null) return null;
+        return rawPath.substring(rawPath.indexOf('/') + 1);
     }
 
 }
