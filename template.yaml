@@ -44,3 +44,23 @@ Resources:
             TableName: !Ref BooksTable
       FunctionUrlConfig:
         AuthType: NONE
+
+  UpdateItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: java11
+      Handler: com.home.amazon.serverless.lambda.UpdateItemHandler::handleRequest
+      Timeout: 30
+      MemorySize: 256
+      CodeUri: .
+      Environment:
+        Variables:
+          TABLE: !Ref BooksTable
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref BooksTable
+      FunctionUrlConfig:
+        AuthType: NONE
+
+
+
