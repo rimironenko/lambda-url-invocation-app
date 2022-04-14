@@ -16,8 +16,8 @@ Resources:
     Properties:
       Runtime: java11
       Handler: com.home.amazon.serverless.lambda.GetItemHandler::handleRequest
-      Timeout: 60
-      MemorySize: 512
+      Timeout: 30
+      MemorySize: 256
       CodeUri: .
       Environment:
         Variables:
@@ -25,5 +25,22 @@ Resources:
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref DynamoDbTable
+      FunctionUrlConfig:
+        AuthType: NONE
+
+  PutItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: java11
+      Handler: com.home.amazon.serverless.lambda.PutItemHandler::handleRequest
+      Timeout: 30
+      MemorySize: 256
+      CodeUri: .
+      Environment:
+        Variables:
+          TABLE: !Ref BooksTable
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref BooksTable
       FunctionUrlConfig:
         AuthType: NONE

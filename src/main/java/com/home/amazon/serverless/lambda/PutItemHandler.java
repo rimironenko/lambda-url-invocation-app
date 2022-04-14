@@ -9,42 +9,36 @@ import com.home.amazon.serverless.DependencyFactory;
 import com.home.amazon.serverless.dto.Book;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.utils.StringUtils;
 
-public class GetItemHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
+public class PutItemHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
 
+    static final int STATUS_CODE_NO_CONTENT = 204;
+    static final int STATUS_CODE_CREATED = 201;
     private final DynamoDbEnhancedClient dbClient;
     private final String tableName;
     private final TableSchema<Book> bookTableSchema;
 
-    public GetItemHandler() {
+    public PutItemHandler() {
         dbClient = DependencyFactory.dynamoDbEnhancedClient();
         tableName = DependencyFactory.tableName();
         bookTableSchema = TableSchema.fromBean(Book.class);
     }
 
     @Override
-    public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent input, Context context) {
-        String response = "";
-        DynamoDbTable<Book> booksTable = dbClient.table(tableName, bookTableSchema);
-        String itemPartitionKey = getPartitionKey(input.getRawPath());
-        if (itemPartitionKey != null) {
-            Book item = booksTable.getItem(Key.builder().partitionValue(itemPartitionKey).build());
+    public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent request, Context context) {
+        String body = request.getBody();
+        int statusCode = STATUS_CODE_NO_CONTENT;
+        if (StringUtils.isNotBlank(body)) {
+            Book item = new Gson().fromJson(body, Book.class);
             if (item != null) {
-                response = new Gson().toJson(item);
+                DynamoDbTable<Book> booksTable = dbClient.table(tableName, bookTableSchema);
+                booksTable.putItem(item);
+                statusCode = STATUS_CODE_CREATED;
             }
         }
-
-        return APIGatewayV2HTTPResponse.builder()
-                .withStatusCode(200)
-                .withBody(response)
-                .build();
-    }
-
-    private String getPartitionKey(String rawPath) {
-        if (rawPath == null) return null;
-        return rawPath.substring(rawPath.indexOf('/') + 1);
+        return APIGatewayV2HTTPResponse.builder().withStatusCode(statusCode).build();
     }
 
 }
