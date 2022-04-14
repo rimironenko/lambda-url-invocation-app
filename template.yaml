@@ -11,7 +11,7 @@ Resources:
         Name: isbn
         Type: String
 
-  GetItemFunction:
+  GetItemHandler:
     Type: AWS::Serverless::Function
     Properties:
       Runtime: java11
@@ -28,7 +28,7 @@ Resources:
       FunctionUrlConfig:
         AuthType: NONE
 
-  PutItemFunction:
+  PutItemHandler:
     Type: AWS::Serverless::Function
     Properties:
       Runtime: java11
@@ -38,14 +38,14 @@ Resources:
       CodeUri: .
       Environment:
         Variables:
-          TABLE: !Ref BooksTable
+          TABLE: !Ref DynamoDbTable
       Policies:
         - DynamoDBWritePolicy:
-            TableName: !Ref BooksTable
+            TableName: !Ref DynamoDbTable
       FunctionUrlConfig:
         AuthType: NONE
 
-  UpdateItemFunction:
+  UpdateItemHandler:
     Type: AWS::Serverless::Function
     Properties:
       Runtime: java11
@@ -55,12 +55,40 @@ Resources:
       CodeUri: .
       Environment:
         Variables:
-          TABLE: !Ref BooksTable
+          TABLE: !Ref DynamoDbTable
       Policies:
         - DynamoDBWritePolicy:
-            TableName: !Ref BooksTable
+            TableName: !Ref DynamoDbTable
       FunctionUrlConfig:
         AuthType: NONE
 
-
-
+  DeleteItemHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: java11
+      Handler: com.home.amazon.serverless.lambda.DeleteItemHandler::handleRequest
+      Timeout: 30
+      MemorySize: 256
+      CodeUri: .
+      Environment:
+        Variables:
+          TABLE: !Ref DynamoDbTable
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:DescribeTable
+                - dynamodb:DeleteItem
+              Resource: {
+                "Fn::Sub": [
+                  "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tableName}",
+                  {
+                    "tableName": {
+                      "Ref": "DynamoDbTable"
+                    }
+                  }
+                ]
+              }
+      FunctionUrlConfig:
+        AuthType: NONE

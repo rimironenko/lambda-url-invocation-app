@@ -12,13 +12,13 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
-public class GetItemHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
+public class DeleteItemHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
 
     private final DynamoDbEnhancedClient dbClient;
     private final String tableName;
     private final TableSchema<Book> bookTableSchema;
 
-    public GetItemHandler() {
+    public DeleteItemHandler() {
         dbClient = DependencyFactory.dynamoDbEnhancedClient();
         tableName = DependencyFactory.tableName();
         bookTableSchema = TableSchema.fromBean(Book.class);
@@ -26,19 +26,16 @@ public class GetItemHandler implements RequestHandler<APIGatewayV2HTTPEvent, API
 
     @Override
     public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent request, Context context) {
-        String response = "";
+        String responseBody = "";
         DynamoDbTable<Book> booksTable = dbClient.table(tableName, bookTableSchema);
         String itemPartitionKey = getPartitionKey(request.getRawPath());
         if (itemPartitionKey != null) {
-            Book item = booksTable.getItem(Key.builder().partitionValue(itemPartitionKey).build());
-            if (item != null) {
-                response = new Gson().toJson(item);
-            }
+            Book deletedBook = booksTable.deleteItem(Key.builder().partitionValue(itemPartitionKey).build());
+            responseBody = new Gson().toJson(deletedBook);
         }
-
         return APIGatewayV2HTTPResponse.builder()
                 .withStatusCode(200)
-                .withBody(response)
+                .withBody(responseBody)
                 .build();
     }
 
