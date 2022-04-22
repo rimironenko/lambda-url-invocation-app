@@ -10,6 +10,9 @@ Resources:
       PrimaryKey:
         Name: isbn
         Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
 
   GetItemHandler:
     Type: AWS::Serverless::Function
@@ -92,3 +95,17 @@ Resources:
               }
       FunctionUrlConfig:
         AuthType: NONE
+
+Outputs:
+  GetItemHandlerUrl:
+    Description: "The Lambda Function invocation URL for GetItemHandler"
+    Value: !GetAtt GetItemHandlerUrl.FunctionUrl
+  PutItemHandlerUrl:
+    Description: "The Lambda Function invocation URL for PutItemHandler"
+    Value: !GetAtt PutItemHandlerUrl.FunctionUrl
+  UpdateItemHandlerUrl:
+    Description: "The Lambda Function invocation URL for UpdateItemHandler"
+    Value: !GetAtt UpdateItemHandlerUrl.FunctionUrl
+  DeleteItemHandlerUrl:
+    Description: "The Lambda Function invocation URL for DeleteItemHandler"
+    Value: !GetAtt DeleteItemHandlerUrl.FunctionUrl
