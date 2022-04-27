@@ -1,21 +1,22 @@
 # App
 
-This project contains an AWS Lambda maven application with [AWS Java SDK 2.x](https://github.com/aws/aws-sdk-java-v2) dependencies.
+The application is a CRUD API with Lambda handlers implemented using Java. Its architecture is in the picture given below.
+![diagram](./docs/architecture.png)
+
 
 ## Prerequisites
-- Java 1.8+
+- Java 11 (Amazon Corretto)
 - Apache Maven
 - [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-- Docker
 
 ## Development
 
-The generated function handler class just returns the input. The configured AWS Java SDK client is created in `DependencyFactory` class and you can 
-add the code to interact with the SDK client based on your use case.
+The Lambda Handlers implement the [Amazon API Gateway payload format version 2.0](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html#http-api-develop-integrations-lambda.proxy-format).
+It is a requirement for invocation of the functions by URL as described in [AWS Lambda Developer guide](https://docs.aws.amazon.com/lambda/latest/dg/urls-invocation.html#urls-payloads).
 
-#### Building the project
+#### Building the application
 ```
-mvn clean install
+sam build
 ```
 
 #### Testing it locally
@@ -29,8 +30,8 @@ pattern as dynamoDbClient.
 
 ## Deployment
 
-The generated project contains a default [SAM template](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html) file `template.yaml` where you can 
-configure different properties of your lambda function such as memory size and timeout. You might also need to add specific policies to the lambda function
+The project contains a [SAM template](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html) file `template.yaml` where you can 
+configure different properties of lambda functions such as memory size and timeout. You might also need to add specific policies to the lambda function
 so that it can access other AWS resources.
 
 To deploy the application, you can run the following command:
