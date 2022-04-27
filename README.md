@@ -1,6 +1,7 @@
 # App
 
 The application is a CRUD API with Lambda handlers implemented using Java. Its architecture is in the picture given below.
+
 ![diagram](./docs/architecture.png)
 
 
